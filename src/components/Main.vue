@@ -1,6 +1,5 @@
 <template>
   <div>
-@click="getNeighbotsInformation()"
     <div>
       <b-card no-body>
         <b-tabs pills card vertical class="base_station_info">
@@ -14,6 +13,7 @@
                 <b-list-group-item label="Spinning">Номер Радиоканала: {{this.mainInfo.ch}}</b-list-group-item>
                 <b-list-group-item label="Spinning">Уровень сигнала: {{this.mainInfo.rssi}}</b-list-group-item>
               </b-list-group>
+              <b-button variant="danger" v-on:click="getMainInformation()" class="button-main-info">Обновить</b-button>
             </b-card-text>
           </b-tab>
             <b-tab title="Tab 2" ><b-card-text>Tab contents 2</b-card-text></b-tab>
@@ -73,6 +73,16 @@ export default {
         .catch(error => {
           console.log(error);
         })
+    },
+    getMainInformation(){
+      Axios.get("http://localhost:8888")
+        .then(response => {
+          console.log(typeof(response.data));
+          this.mainInfo = response.data;        
+        })
+        .catch(error => {
+          console.log(error);
+        })
     }
   },
     
@@ -113,5 +123,10 @@ export default {
   .button{
     position: relative;
     left: 23px;
+  }
+  .button-main-info{
+    position: relative;
+    left: 0;
+    top: 12px;
   }
 </style>
