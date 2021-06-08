@@ -3,8 +3,9 @@
     <div>
       <b-card no-body>
         <b-tabs pills card vertical class="base_station_info">
-          <b-tab title="Current Cell" active>
+          <b-tab title="Текущая сота" active>
             <b-card-text>
+              <h3 class="p-3 text-center">Информация вашей текущей соты</h3>
               <b-list-group >
                 <b-list-group-item label="Spinning">MCC: {{this.mainInfo.mcc}}</b-list-group-item>
                 <b-list-group-item label="Spinning">MNC: {{this.mainInfo.mnc}}</b-list-group-item>
@@ -13,14 +14,14 @@
                 <b-list-group-item label="Spinning">Номер Радиоканала: {{this.mainInfo.ch}}</b-list-group-item>
                 <b-list-group-item label="Spinning">Уровень сигнала: {{this.mainInfo.rssi}}</b-list-group-item>
               </b-list-group>
-              <b-button variant="danger" v-on:click="getMainInformation()" class="button-main-info">Обновить</b-button>
+              <!-- <b-button variant="danger" v-on:click="getMainInformation()" class="button-main-info">Обновить</b-button> -->
             </b-card-text>
           </b-tab>
-            <b-tab title="Tab 2" ><b-card-text>Tab contents 2</b-card-text></b-tab>
-            <b-tab title="Neighbours Information" >
+            <b-tab title="Графики" ><b-card-text>Tab contents 2</b-card-text></b-tab>
+            <b-tab title="Информация соседних сот">
               <b-card-text>
                     <div class="container">
-                      <h3 class="p-3 text-center">Информаци по соседним сотам</h3>
+                      <h3 class="p-3 text-center">Информация по соседним сотам</h3>
                       <table class="table table-striped table-bordered">
                           <thead>
                               <tr>
@@ -41,8 +42,8 @@
                               </tr>
                           </tbody>
                       </table>
-                   </div>
-                   <b-button variant="danger" v-on:click="getNeighbotsInformation()" class="button">Обновить</b-button>
+                    </div>
+                    <!-- <b-button variant="danger" v-on:click="getNeighbotsInformation()" class="button">Обновить</b-button> -->
               </b-card-text>
             </b-tab>
         </b-tabs>
@@ -59,7 +60,6 @@ export default {
   data() {
     return {
       mainInfo: {},
-      fieldsNeighbors: ['cellName', 'cellId', 'lac', 'ch', 'rssi'],
       neighbors: {}
     };
   },
