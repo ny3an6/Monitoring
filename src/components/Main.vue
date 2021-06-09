@@ -60,7 +60,9 @@ export default {
   data() {
     return {
       mainInfo: {},
-      neighbors: {}
+      neighbors: {},
+      connection: null,
+      socketInfo:{}
     };
   },
   methods: {
@@ -87,30 +89,22 @@ export default {
   },
     
   async created(){
-    console.log("Hello")
-    await Axios.get("http://localhost:8888")
-      .then(response => {
-        console.log(response.data);
-        this.mainInfo = response.data;       
-      })
-      .catch(error => {
-        console.log(error);
-      })
-      Axios.get("http://localhost:8888/neighbors")
-        .then(response => {
-          console.log(typeof(response.data));
-          this.neighbors = response.data;        
-          for ( let key in this.neighbors){
-            console.log(Object.keys(this.neighbors[key]))
-            for(let i in this.neighbors[key]){
-              console.log(i);
-              console.log(typeof(i));   
-            }
-          }
-        })
-        .catch(error => {
-          console.log(error);
-        })
+
+    let connection = new WebSocket("ws://localhost:8888/ws/dblistener");
+
+    connection.onopen = async function (event) {
+      console.log(event);
+      connection.send("subscribe measured_current_cell_info_insert")
+      console.log("Successfully connected to the echo websocket server...");
+    };
+
+    connection.onmessage = function (event) {
+      this.socketInfo = event.data;
+      console.log(event.data);
+      console.log(typeof(event.data));
+    };
+    
+    console.log("MESSAGEEEEEES: " + this.socketInfo);
   }
 };
 </script>
