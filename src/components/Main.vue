@@ -5,14 +5,15 @@
         <b-tabs pills card vertical class="base_station_info">
           <b-tab title="Текущая сота" active>
             <b-card-text>
+              <div>{{currentCell}}</div>
               <h3 class="p-3 text-center">Информация вашей текущей соты</h3>
               <b-list-group >
-                <b-list-group-item label="Spinning">MCC: {{this.currentCell.mcc}}</b-list-group-item>
-                <b-list-group-item label="Spinning">MNC: {{this.mainInfo.mnc}}</b-list-group-item>
-                <b-list-group-item label="Spinning">LAC: {{this.mainInfo.lac}}</b-list-group-item>
-                <b-list-group-item label="Spinning">Cell Id: {{this.mainInfo.cellId}}</b-list-group-item>
-                <b-list-group-item label="Spinning">Номер Радиоканала: {{this.mainInfo.ch}}</b-list-group-item>
-                <b-list-group-item label="Spinning">Уровень сигнала: {{this.mainInfo.rssi}}</b-list-group-item>
+                <b-list-group-item label="Spinning">MCC: {{currentCell.mcc}}</b-list-group-item>
+                <b-list-group-item label="Spinning">MNC: {{currentCell.mnc}}</b-list-group-item>
+                <b-list-group-item label="Spinning">LAC: {{currentCell.lac}}</b-list-group-item>
+                <b-list-group-item label="Spinning">Cell Id: {{currentCell.cell_id}}</b-list-group-item>
+                <b-list-group-item label="Spinning">Номер Радиоканала: {{currentCell.ch}}</b-list-group-item>
+                <b-list-group-item label="Spinning">Уровень сигнала: {{currentCell.rssi}}</b-list-group-item>
               </b-list-group>
               <!-- <b-button variant="danger" v-on:click="getMainInformation()" class="button-main-info">Обновить</b-button> -->
             </b-card-text>
@@ -23,27 +24,27 @@
                     <div class="container">
                       <h3 class="p-3 text-center">Информация по соседним сотам</h3>
                       <table class="table table-striped table-bordered">
-                          <thead>
-                              <tr>
-                                  <th>CellId</th>
-                                  <th>CellName</th>
-                                  <th>LAC</th>
-                                  <th>Ch</th>
-                                  <th>Уровень сигнала</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr v-for="neighbor in neighbors" :key="neighbor.cellId">
-                                  <td>{{neighbor.cellId}}</td>
-                                  <td>{{neighbor.cellName}}</td>
-                                  <td>{{neighbor.lac}}</td>
-                                  <td>{{neighbor.ch}}</td>
-                                  <td>{{neighbor.rssi}}</td>
-                              </tr>
-                          </tbody>
+                        <thead>
+                          <tr>
+                            <th>CellId</th>
+                            <th>CellName</th>
+                            <th>LAC</th>
+                            <th>Ch</th>
+                            <th>Уровень сигнала</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="neighbor in neighbors" :key="neighbor.cellId">
+                            <td>{{ neighbor.cell_id }}</td>
+                            <td>{{ neighbor.cell_name }}</td>
+                            <td>{{ neighbor.lac }}</td>
+                            <td>{{ neighbor.ch }}</td>
+                            <td>{{ neighbor.rssi }}</td>
+                          </tr>
+                        </tbody>
                       </table>
-                    </div>
-                    <!-- <b-button variant="danger" v-on:click="getNeighbotsInformation()" class="button">Обновить</b-button> -->
+                      </div>
+                        <!-- <b-button variant="danger" v-on:click="getNeighbotsInformation()" class="button">Обновить</b-button> -->
               </b-card-text>
             </b-tab>
         </b-tabs>
@@ -54,13 +55,15 @@
 
 <script>
 import Axios from "axios";
+// import Neighbors from "./Neighbors.vue";
 
 export default {
+  // components: { Neighbors },
   name: "Main",
   data() {
     return {
       mainInfo: {},
-      neighbors: {},
+      neighbors: [],
       connection: null,
       currentCell:{}
     };
@@ -97,22 +100,38 @@ export default {
   },
     
   async created(){
-
+    
+    let vm = this;
     let connection = new WebSocket("ws://localhost:8888/ws/dblistener");
 
     connection.onopen = async function (event) {
       console.log(event);
       connection.send("subscribe measured_current_cell_info_insert")
+      connection.send("subscribe measured_neighbors_cell_info_insert")
       console.log("Successfully connected to the echo websocket server...");
     };
-
+    
     connection.onmessage = function (event) {
-      this.currentCell = JSON.parse(event.data).data;
-      console.log(this.currentCell);
-      console.log("Parsing this.socketInfo.data");
-      console.log(typeof(this.currentCell));
-      
+      if(JSON.parse(event.data) !== undefined){
+      let receivedData = JSON.parse(event.data);
+
+      setTimeout(() => {console.log("Wait 7 sec")}, 7000)
+      for(let cell in vm.neighbors){
+            console.log(cell)
+            vm.neighbors.pop();
+      }  
+      switch(receivedData.channel){
+        case "measured_current_cell_info_insert":
+          vm.currentCell = receivedData.data;
+          break;
+        case "measured_neighbors_cell_info_insert":
+          console.log(vm.neighbors)
+          vm.neighbors.push(receivedData.data)
+          break;
+      }
+      }
     };
+    console.log("CURRENTCEL: " + vm.currentCell)
   }
 };
 </script>
