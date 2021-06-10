@@ -7,7 +7,7 @@
             <b-card-text>
               <h3 class="p-3 text-center">Информация вашей текущей соты</h3>
               <b-list-group >
-                <b-list-group-item label="Spinning">MCC: {{this.mainInfo.mcc}}</b-list-group-item>
+                <b-list-group-item label="Spinning">MCC: {{this.currentCell.mcc}}</b-list-group-item>
                 <b-list-group-item label="Spinning">MNC: {{this.mainInfo.mnc}}</b-list-group-item>
                 <b-list-group-item label="Spinning">LAC: {{this.mainInfo.lac}}</b-list-group-item>
                 <b-list-group-item label="Spinning">Cell Id: {{this.mainInfo.cellId}}</b-list-group-item>
@@ -62,7 +62,7 @@ export default {
       mainInfo: {},
       neighbors: {},
       connection: null,
-      socketInfo:{}
+      currentCell:{}
     };
   },
   methods: {
@@ -85,6 +85,14 @@ export default {
         .catch(error => {
           console.log(error);
         })
+    },
+    parsedSocketInformation(){
+      if(this.socketInfo === null){
+        return null;
+      }
+      else {
+        return null
+      }
     }
   },
     
@@ -99,12 +107,12 @@ export default {
     };
 
     connection.onmessage = function (event) {
-      this.socketInfo = event.data;
-      console.log(event.data);
-      console.log(typeof(event.data));
+      this.currentCell = JSON.parse(event.data).data;
+      console.log(this.currentCell);
+      console.log("Parsing this.socketInfo.data");
+      console.log(typeof(this.currentCell));
+      
     };
-    
-    console.log("MESSAGEEEEEES: " + this.socketInfo);
   }
 };
 </script>
