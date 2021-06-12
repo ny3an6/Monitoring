@@ -5,7 +5,6 @@
         <b-tabs pills card vertical class="base_station_info">
           <b-tab title="Текущая сота" active>
             <b-card-text>
-              <div>{{currentCell}}</div>
               <h3 class="p-3 text-center">Информация вашей текущей соты</h3>
               <b-list-group >
                 <b-list-group-item label="Spinning">MCC: {{currentCell.mcc}}</b-list-group-item>
@@ -14,6 +13,7 @@
                 <b-list-group-item label="Spinning">Cell Id: {{currentCell.cell_id}}</b-list-group-item>
                 <b-list-group-item label="Spinning">Номер Радиоканала: {{currentCell.ch}}</b-list-group-item>
                 <b-list-group-item label="Spinning">Уровень сигнала: {{currentCell.rssi}}</b-list-group-item>
+                <b-list-group-item label="Spinning">BER: {{currentCell.ber}}</b-list-group-item>
               </b-list-group>
             </b-card-text>
           </b-tab>
@@ -45,7 +45,7 @@
                             <td>{{ neighbor.lac }}</td>
                             <td>{{ neighbor.ch }}</td>
                             <td>{{ neighbor.rssi }}</td>
-                            <td>{{ neighbor.scan_date }}</td>
+                            <td>{{ formatDate(neighbor.scan_date) }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -68,7 +68,6 @@ export default {
     return {
       neighbors: [],
       currentNeighborCellDate:{},
-      connection: null,
       currentCell:{},
       rssiCollection: {},
       berCollection: {},
@@ -82,15 +81,19 @@ export default {
     LineChart
   },
   methods: {
+    formatDate(timeStampDate){
+      let date = new Date(timeStampDate)
+      return date.toLocaleString();
+    },
     sendDataToCharts(){
-      let dateResults = this.chartData.map(x=> x.scan_date)
-      let rssiResults = this.chartData.map(x=> Number.parseInt(x.rssi.slice(0, -3)))
-      let berResults = this.chartData.map(x=> x.ber)
+      let dateResults = this.chartData.map(x=> this.formatDate(x.scan_date))
+      let rssiResults = this.chartData.map(x=> x.rssi !=null ? Number.parseInt(x.rssi.slice(0, -3)) : 0)
+      let berResults = this.chartData.map(x=> x.ber !=null ? x.ber : 99)
 
       this.arraOfDate = dateResults,
       this.arrayOfRssi = rssiResults,
       this.arraOfBer = berResults
-
+      
       this.rssiCollection = {
         labels: this.arraOfDate,
         datasets: [
@@ -125,7 +128,8 @@ export default {
     
     let vm = this;
     let connection = new WebSocket("ws://localhost:8888/ws/dblistener");
-
+    
+    console.log(vm.connection)
     connection.onopen = async function (event) {
       console.log(event);
       connection.send("subscribe measured_current_cell_info_insert")
@@ -139,11 +143,7 @@ export default {
       switch(receivedData.channel){
         case "measured_current_cell_info_insert":
           vm.currentCell = receivedData.data;
-          console.log("SCAN_DATE" + vm.currentCell.scan_date)
-          console.log("RSSI" + vm.currentCell.rssi)
-
-          vm.chartData.push(vm.currentCell)
-          console.log(vm.chartData)
+          vm.chartData.push(vm.currentCell) 
           vm.sendDataToCharts()
           break;
         case "measured_neighbors_cell_info_insert":
@@ -173,4 +173,5 @@ export default {
     left: 0;
     top: 12px;
   }
+
 </style>
